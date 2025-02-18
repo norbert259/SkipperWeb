@@ -1,82 +1,81 @@
 <template>
-  <nav class="navbar navbar-expand-lg bg-body-tertiary">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="#">Skipper</a>
-      <button aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"
-              class="navbar-toggler"
-              data-bs-target="#navbarSupportedContent" data-bs-toggle="collapse" type="button">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div id="navbarSupportedContent" class="collapse navbar-collapse">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item dropdown">
-            <a aria-expanded="false" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#"
-               role="button">
-              Maps
-            </a>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" :class="{ active: basemap===1 }" @click="setBaseMap(1)">Openstreet Map</a></li>
-              <li><a class="dropdown-item" :class="{ active: basemap===2 }" @click="setBaseMap(2)">Topo Map</a></li>
-              <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item" :class="{ active: openseamap }" @click="openseamap=!openseamap">Openseamap</a></li>
-            </ul>
-          </li>
-        </ul>
-        <form class="d-flex" role="search">
-          <input aria-label="Search" class="form-control me-2" placeholder="Search" type="search">
-          <button class="btn btn-outline-success" type="submit">Search</button>
-        </form>
-      </div>
-    </div>
-  </nav>
 
-  <ol-map style="height: 800px">
-    <ol-view
-        ref="view"
-        :center="center"
-        :projection="projection"
-        :rotation="rotation"
-        :zoom="zoom"
-        @change:center="centerChanged"
-        @change:resolution="resolutionChanged"
-        @change:rotation="rotationChanged"
-    />
+  <v-app id="inspire">
+    <v-app-bar :elevation="2">
+      <template v-slot:prepend>
+        <v-app-bar-nav-icon><v-icon icon="mdi-menu" /></v-app-bar-nav-icon>
+        <v-app-bar-title>Skipper</v-app-bar-title>
 
-    <ol-tile-layer v-if="basemap===1">
-      <ol-source-osm></ol-source-osm>
-    </ol-tile-layer>
+        <v-menu open-on-hover>
+          <template v-slot:activator="{ props }">
+            <v-btn color="primary" variant="tonal" v-bind="props" class="ml-5">Maps</v-btn>
+          </template>
+          <v-list>
+            <v-list-item :active="basemap===1" @click="setBaseMap(1)">
+              <v-list-item-title>OSM</v-list-item-title>
+            </v-list-item>
+            <v-list-item :active="basemap===2"  @click="setBaseMap(2)">
+              <v-list-item-title>Topo</v-list-item-title>
+            </v-list-item>
+            <v-list-item><v-divider></v-divider></v-list-item>
+            <v-list-item :active="openseamap" @click="openseamap=!openseamap">
+              <v-list-item-title>Openseamap</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+      </template>
 
-    <ol-tile-layer v-if="basemap===2">
-      <ol-source-osm :url="topomapurl"></ol-source-osm>
-    </ol-tile-layer>
+    </v-app-bar>
 
-    <ol-tile-layer v-if="openseamap">
-      <ol-source-osm :url="openseamapurl"/>
-    </ol-tile-layer>
+    <ol-map style="height: 800px" class="mt-16">
+      <ol-view
+          ref="view"
+          :center="center"
+          :projection="projection"
+          :rotation="rotation"
+          :zoom="zoom"
+          @change:center="centerChanged"
+          @change:resolution="resolutionChanged"
+          @change:rotation="rotationChanged"
+      />
 
-    <ol-rotate-control></ol-rotate-control>
-    <ol-interaction-link/>
-    <ol-scaleline-control :bar=true></ol-scaleline-control>
-    <ol-mouseposition-control/>
-
-    <ol-overviewmap-control :collapsed="false">
-      <ol-tile-layer>
-        <ol-source-osm/>
+      <ol-tile-layer v-if="basemap===1">
+        <ol-source-osm></ol-source-osm>
       </ol-tile-layer>
-    </ol-overviewmap-control>
-  </ol-map>
 
-  <form>
-    <label for="zoom">Zoom:</label>
-    <input id="zoom" v-model="zoom" type="number"/>
-  </form>
+      <ol-tile-layer v-if="basemap===2">
+        <ol-source-osm :url="topomapurl"></ol-source-osm>
+      </ol-tile-layer>
 
-  <ul>
-    <li>center : {{ currentCenter }}</li>
-    <li>resolution : {{ currentResolution }}</li>
-    <li>zoom : {{ currentZoom }}</li>
-    <li>rotation : {{ currentRotation }}</li>
-  </ul>
+      <ol-tile-layer v-if="openseamap">
+        <ol-source-osm :url="openseamapurl"/>
+      </ol-tile-layer>
+
+      <ol-zoomslider-control />
+      <ol-rotate-control></ol-rotate-control>
+      <ol-interaction-link/>
+      <ol-scaleline-control :bar=true></ol-scaleline-control>
+      <ol-mouseposition-control/>
+
+      <ol-overviewmap-control :collapsed="false">
+        <ol-tile-layer>
+          <ol-source-osm/>
+        </ol-tile-layer>
+      </ol-overviewmap-control>
+    </ol-map>
+
+    <form>
+      <label for="zoom">Zoom:</label>
+      <input id="zoom" v-model="zoom" type="number"/>
+    </form>
+
+    <ul>
+      <li>center : {{ currentCenter }}</li>
+      <li>resolution : {{ currentResolution }}</li>
+      <li>zoom : {{ currentZoom }}</li>
+      <li>rotation : {{ currentRotation }}</li>
+    </ul>
+  </v-app>
 </template>
 
 <script setup>
@@ -96,7 +95,6 @@ const basemap = ref(1);
 const openseamapurl = ref("https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png");
 const topomapurl = ref("https://a.tile.opentopomap.org/{z}/{x}/{y}.png")
 const openseamap = ref(false);
-
 
 function setBaseMap(i) {
   basemap.value = i;
