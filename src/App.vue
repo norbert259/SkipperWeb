@@ -27,7 +27,7 @@
 
     </v-app-bar>
 
-    <ol-map style="height: 800px" class="mt-16">
+    <ol-map style="height: 100%" class="pt-16">
       <ol-view
           ref="view"
           :center="center"
@@ -51,40 +51,67 @@
         <ol-source-osm :url="openseamapurl"/>
       </ol-tile-layer>
 
+      <ol-mouseposition-control :coordinateFormat="toStringHDMS"></ol-mouseposition-control>
       <ol-zoomslider-control />
       <ol-rotate-control></ol-rotate-control>
       <ol-interaction-link/>
-      <ol-scaleline-control :bar=true></ol-scaleline-control>
-      <ol-mouseposition-control/>
+      <ol-scaleline-control :bar=true style="left: 200px !important;"></ol-scaleline-control>
 
       <ol-overviewmap-control :collapsed="false">
         <ol-tile-layer>
           <ol-source-osm/>
         </ol-tile-layer>
       </ol-overviewmap-control>
+
+      <div style="position: absolute; left: 200px; bottom: 100px; z-index: 10">
+        Position: {{ toStringHDMS(position) }}
+      </div>
+
+      <div style="position: absolute; left: 200px; bottom: 80px; z-index: 10">
+        Accuracy: {{ new Intl.NumberFormat().format(accuracy) }}
+        Speed: {{ new Intl.NumberFormat().format(speed) }}
+        Heading: {{ new Intl.NumberFormat().format(heading) }}
+      </div>
+
+      <div style="position: absolute; left: 200px; bottom: 40px; z-index: 10">
+        Zoom: {{ new Intl.NumberFormat().format(currentZoom) }}
+      </div>
+
+      <ol-geolocation :projection="projection" @change:position="geoLocChange">
+        <template>
+          <ol-vector-layer :zIndex="2">
+            <ol-source-vector>
+              <ol-feature ref="positionFeature">
+                <ol-geom-point :coordinates="position"></ol-geom-point>
+                <ol-style>
+                  <ol-style-icon :src="navigationIcon" :scale="1"></ol-style-icon>
+                </ol-style>
+              </ol-feature>
+            </ol-source-vector>
+          </ol-vector-layer>
+        </template>
+      </ol-geolocation>
+
     </ol-map>
-
-    <form>
-      <label for="zoom">Zoom:</label>
-      <input id="zoom" v-model="zoom" type="number"/>
-    </form>
-
-    <ul>
-      <li>center : {{ currentCenter }}</li>
-      <li>resolution : {{ currentResolution }}</li>
-      <li>zoom : {{ currentZoom }}</li>
-      <li>rotation : {{ currentRotation }}</li>
-    </ul>
   </v-app>
 </template>
 
 <script setup>
 import {ref} from "vue";
+import {toStringHDMS} from 'ol/coordinate';
+import View from "ol/View";
+import navigationIcon from "@/assets/navigation.png";
 
 const center = ref([40, 40]);
 const projection = ref("EPSG:4326");
 const zoom = ref(8);
 const rotation = ref(0);
+const position = ref([]);
+const accuracy = ref(0);
+const heading = ref(0);
+const speed = ref(0);
+
+const view = ref(new View());
 
 const currentCenter = ref(center.value);
 const currentZoom = ref(zoom.value);
@@ -95,6 +122,16 @@ const basemap = ref(1);
 const openseamapurl = ref("https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png");
 const topomapurl = ref("https://a.tile.opentopomap.org/{z}/{x}/{y}.png")
 const openseamap = ref(false);
+
+const geoLocChange = (event) => {
+  position.value = event.target.getPosition();
+  accuracy.value = event.target.getAccuracy();
+  heading.value = event.target.getHeading();
+  speed.value = event.target.getSpeed();
+
+  console.log("Location:", event, position.value);
+  view.value?.setCenter(event.target?.getPosition());
+};
 
 function setBaseMap(i) {
   basemap.value = i;
@@ -115,25 +152,6 @@ function rotationChanged(event) {
 </script>
 
 <style scoped>
-.ol-map {
-  position: relative;
-}
-
-.ol-map-loading:after {
-  content: "";
-  box-sizing: border-box;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 80px;
-  height: 80px;
-  margin-top: -40px;
-  margin-left: -40px;
-  border-radius: 50%;
-  border: 5px solid rgba(180, 180, 180, 0.6);
-  animation: spinner 0.6s linear infinite;
-}
-
 @keyframes spinner {
   to {
     transform: rotate(360deg);
