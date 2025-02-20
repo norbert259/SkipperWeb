@@ -3,10 +3,12 @@
   <v-app id="inspire">
     <v-app-bar :elevation="2">
       <template v-slot:prepend>
-        <v-app-bar-nav-icon><v-icon icon="mdi-menu" /></v-app-bar-nav-icon>
+        <v-app-bar-nav-icon>
+          <v-icon icon="mdi-menu"/>
+        </v-app-bar-nav-icon>
         <v-app-bar-title>Skipper</v-app-bar-title>
 
-        <v-menu open-on-hover>
+        <v-menu open-on-click>
           <template v-slot:activator="{ props }">
             <v-btn color="primary" variant="tonal" v-bind="props" class="ml-5">Maps</v-btn>
           </template>
@@ -14,10 +16,12 @@
             <v-list-item :active="basemap===1" @click="setBaseMap(1)">
               <v-list-item-title>OSM</v-list-item-title>
             </v-list-item>
-            <v-list-item :active="basemap===2"  @click="setBaseMap(2)">
+            <v-list-item :active="basemap===2" @click="setBaseMap(2)">
               <v-list-item-title>Topo</v-list-item-title>
             </v-list-item>
-            <v-list-item><v-divider></v-divider></v-list-item>
+            <v-list-item>
+              <v-divider></v-divider>
+            </v-list-item>
             <v-list-item :active="openseamap" @click="openseamap=!openseamap">
               <v-list-item-title>Openseamap</v-list-item-title>
             </v-list-item>
@@ -52,7 +56,7 @@
       </ol-tile-layer>
 
       <ol-mouseposition-control :coordinateFormat="toStringHDMS"></ol-mouseposition-control>
-      <ol-zoomslider-control />
+      <ol-zoomslider-control/>
       <ol-rotate-control></ol-rotate-control>
       <ol-interaction-link/>
       <ol-scaleline-control :bar=true style="left: 200px !important;"></ol-scaleline-control>
@@ -63,19 +67,15 @@
         </ol-tile-layer>
       </ol-overviewmap-control>
 
-      <div style="position: absolute; left: 200px; bottom: 100px; z-index: 10">
-        Position: {{ toStringHDMS(position) }}
-      </div>
-
-      <div style="position: absolute; left: 200px; bottom: 80px; z-index: 10">
-        Accuracy: {{ new Intl.NumberFormat().format(accuracy) }}
-        Speed: {{ new Intl.NumberFormat().format(speed) }}
-        Heading: {{ new Intl.NumberFormat().format(heading) }}
-      </div>
-
-      <div style="position: absolute; left: 200px; bottom: 40px; z-index: 10">
-        Zoom: {{ new Intl.NumberFormat().format(currentZoom) }}
-      </div>
+      <v-card style="position: absolute; right: 20px; top: 100px; z-index: 10">
+        <v-list lines="one">
+          <v-list-item title="Position"></v-list-item>
+          <v-list-item subtitle="Position">{{ toStringHDMS(position) }}</v-list-item>
+          <v-list-item subtitle="Accuracy">{{ new Intl.NumberFormat().format(accuracy) }}</v-list-item>
+          <v-list-item subtitle="Speed">{{ new Intl.NumberFormat().format(speed) }}</v-list-item>
+          <v-list-item subtitle="Heading">{{ new Intl.NumberFormat().format(heading) }}</v-list-item>
+        </v-list>
+      </v-card>
 
       <ol-geolocation :projection="projection" @change:position="geoLocChange">
         <template>
