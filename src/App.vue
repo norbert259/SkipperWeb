@@ -19,6 +19,9 @@
             <v-list-item :active="basemap===2" @click="setBaseMap(2)">
               <v-list-item-title>Topo</v-list-item-title>
             </v-list-item>
+            <v-list-item :active="basemap===3" @click="setBaseMap(3)">
+              <v-list-item-title>Outdoor V2</v-list-item-title>
+            </v-list-item>
             <v-list-item>
               <v-divider></v-divider>
             </v-list-item>
@@ -51,6 +54,13 @@
         <ol-source-osm :url="topomapurl"></ol-source-osm>
       </ol-tile-layer>
 
+      <ol-tile-layer v-if="basemap===3">
+        <ol-source-xyz
+            url="https://api.maptiler.com/maps/streets-v2/256/{z}/{x}/{y}.png?key=VtOrxp94ttepmvokSpNS"
+            crossOrigin="anonymous"
+        />
+      </ol-tile-layer>
+
       <ol-tile-layer v-if="openseamap">
         <ol-source-osm :url="openseamapurl"/>
       </ol-tile-layer>
@@ -69,8 +79,9 @@
 
       <v-card style="position: absolute; right: 20px; top: 100px; z-index: 10">
         <v-list lines="one">
-          <v-list-item title="Position"></v-list-item>
-          <v-list-item subtitle="Position">{{ toStringHDMS(position) }}</v-list-item>
+          <v-list-item subtitle="Position">
+            Lat: <span class="text-right">{{ degreesToStringHDMS('NS', position[0], 1)}}</span><br>Lon: {{ degreesToStringHDMS('EW', position[1], 1) }}
+          </v-list-item>
           <v-list-item subtitle="Accuracy">{{ new Intl.NumberFormat().format(accuracy) }}</v-list-item>
           <v-list-item subtitle="Speed">{{ new Intl.NumberFormat().format(speed) }}</v-list-item>
           <v-list-item subtitle="Heading">{{ new Intl.NumberFormat().format(heading) }}</v-list-item>
@@ -98,9 +109,11 @@
 
 <script setup>
 import {ref} from "vue";
-import {toStringHDMS} from 'ol/coordinate';
+import {toStringHDMS, degreesToStringHDMS} from 'ol/coordinate';
 import View from "ol/View";
 import navigationIcon from "@/assets/navigation.png";
+
+const mapTilerKey = "VtOrxp94ttepmvokSpNS";
 
 const center = ref([40, 40]);
 const projection = ref("EPSG:4326");
